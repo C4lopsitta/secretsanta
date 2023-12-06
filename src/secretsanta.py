@@ -1,8 +1,7 @@
-import math
 from sys import argv
 from json import loads
-from random import shuffle
 
+import random
 import ssl
 
 
@@ -21,9 +20,18 @@ def main():
         tuples = f.read().split("\n")
         for i in range(len(tuples)):
             blacklist_tuples.append(tuples[i].split(";"))
+            # TODO: Implement adder to refuses in people[{}]
         f.close()
 
-    # The actual matching happens by making a circular list of people that reference one another
+    random.shuffle(people)
+
+    for i in range(len(people)):
+        while people[i].get("gifts_to") is None:
+            for j in range(len(people)):
+                if i != j and people[j].get("email") not in people[i].get("refuses"):
+                    people[i]["gifts_to"] = people[j].get("email")
+                    people[j]["refuses"].append(people[i].get("email"))
+                    break
 
     return
 
@@ -37,8 +45,10 @@ def load_people(filename: str,
             people_list.append({
                 "name": person[1],
                 "email": person[0],
-                "refuses": None
+                "refuses": [],
+                "gifts_to": None,
             })
+            people_list[i]["refuses"].append(person[0])
         f.close()
 
 
