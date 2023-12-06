@@ -1,48 +1,25 @@
-from sys import argv
-from json import loads
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-import smtplib, ssl
-
-
-def main():
-    with open(argv[1], "r", encoding="utf-8") as f:
-        creds = loads(f.read())
-        f.close()
-
-    context = ssl.create_default_context()
-
-    with open(argv[2], "r", encoding="utf-8") as f:
-        tuples = f.read().split(";")
-        print(tuples)
-
-    send_email(context=context,
-               smtp_url=creds.get("server"),
-               login_email=creds.get("email"),
-               login_passord=creds.get("password"),
-               send_email="simonerobaldo98@gmail.com",
-               gift_sender="simone",
-               gift_receiver="giovanni")
-
-    return
+import smtplib
+import ssl
 
 
 def send_email(context: ssl.SSLContext,
                smtp_url: str,
                login_email: str,
-               login_passord: str,
-               send_email: str,
+               login_password: str,
+               sender_email: str,
                gift_sender: str,
-               gift_receiver: str):
+               gift_receiver: str) -> None:
     mesg = MIMEMultipart("alternative")
     mesg["Subject"] = "Secret Santa"
     mesg["From"] = login_email
-    mesg["To"] = send_email
+    mesg["To"] = sender_email
     text = f"""
-                    Questa email è stata mandata automaticamente.
-                    {gift_sender}, dovrai fare il tuo regalo a {gift_receiver}
-                    """
+           Questa email è stata mandata automaticamente.
+           {gift_sender}, dovrai fare il tuo regalo a {gift_receiver}
+           """
 
     text_part = MIMEText(text, "plain")
     html_part = MIMEText(format_html_email(gift_sender, gift_receiver), "html")
@@ -50,9 +27,9 @@ def send_email(context: ssl.SSLContext,
     mesg.attach(html_part)
 
     with smtplib.SMTP_SSL(smtp_url, 465, context=context) as server:
-        server.login(login_email, login_passord)
+        server.login(login_email, login_password)
         server.sendmail(login_email,
-                        send_email,
+                        sender_email,
                         mesg.as_string())
 
 
@@ -61,7 +38,7 @@ def format_html_email(sender: str,
     return f"""
         <html>
             <head>
-                
+
             </head>
             <body>
                 <h1>Secret Santa</h1>
@@ -73,7 +50,3 @@ def format_html_email(sender: str,
             </body>
         </html>
         """
-
-
-if __name__ == "__main__":
-    main()
