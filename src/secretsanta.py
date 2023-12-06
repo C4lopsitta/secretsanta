@@ -1,6 +1,7 @@
 import json
 from sys import argv
 from json import loads
+from email_sender import send_email
 
 import random
 import ssl
@@ -13,20 +14,20 @@ def main():
     random.shuffle(people)
 
     for i in range(len(people)):
-        print(people[i])
-
-    for i in range(len(people)):
         while people[i].get("gifts_to") is None:
             for j in range(len(people)):
                 if i != j and people[j].get("email") not in people[i].get("refuses"):
-                    people[i]["gifts_to"] = people[j].get("email")
+                    people[i]["gifts_to"] = people[j].get("name")
                     append_refused_email_to_person_in_people(people, j, people[i].get("email"))
                     break
 
-    for i in range(len(people)):
-        print(people[i])
-
     creds = get_email_context(argv[1])
+    for i in range(len(people)):
+        print(f"Sending email {i} to {people[i].get('email')}")
+        send_email(context=creds,
+                   sender_email=people[i].get("email"),
+                   gift_sender=people[i].get("name"),
+                   gift_receiver=people[i].get("gifts_to"))
 
 
 def load_people(filename: str,

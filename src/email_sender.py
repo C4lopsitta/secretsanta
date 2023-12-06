@@ -5,16 +5,13 @@ import smtplib
 import ssl
 
 
-def send_email(context: ssl.SSLContext,
-               smtp_url: str,
-               login_email: str,
-               login_password: str,
+def send_email(context: dict,
                sender_email: str,
                gift_sender: str,
                gift_receiver: str) -> None:
     mesg = MIMEMultipart("alternative")
     mesg["Subject"] = "Secret Santa"
-    mesg["From"] = login_email
+    mesg["From"] = context.get("email")
     mesg["To"] = sender_email
     text = f"""
            Questa email è stata mandata automaticamente.
@@ -26,9 +23,9 @@ def send_email(context: ssl.SSLContext,
     mesg.attach(text_part)
     mesg.attach(html_part)
 
-    with smtplib.SMTP_SSL(smtp_url, 465, context=context) as server:
-        server.login(login_email, login_password)
-        server.sendmail(login_email,
+    with smtplib.SMTP_SSL(context.get("server"), 465, context=context.get("context")) as server:
+        server.login(context.get("email"), context.get("password"))
+        server.sendmail(context.get("email"),
                         sender_email,
                         mesg.as_string())
 
