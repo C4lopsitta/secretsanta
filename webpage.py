@@ -111,8 +111,8 @@ def accept_registration(request: Request,
     try:
         email_sender.send_confirmation_email(sender_name=name,
                                              sender_email=email_address,
-                                             url=f"{base_url}/confirm_email?store_id={store_id}&email_address={email_address}&name={name}",
-                                             retry_url=f"{base_url}/?store_id={store_id}&email_address={email_address}&name={name}",
+                                             url=f"http://{base_url}/confirm_email?store_id={store_id}&email_address={email_address}&name={name}",
+                                             retry_url=f"http://{base_url}/?store_id={store_id}&email_address={email_address}&name={name}",
                                              admin_email=admin_email,
                                              store_name=santastore["name"])
 
