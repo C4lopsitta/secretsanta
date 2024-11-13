@@ -30,7 +30,7 @@ def delete_store(store_id: str):
     os.remove("santastores/"+store_id+".json")
 
 
-def load_store(store_id: str):
+def load_store(store_id: str) -> dict:
     return json.load(open("santastores/"+store_id+".json"))
 
 

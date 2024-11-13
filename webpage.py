@@ -1,4 +1,6 @@
-from fastapi import FastAPI
+from typing import Annotated
+
+from fastapi import FastAPI, Form
 from fastapi.requests import Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -15,7 +17,7 @@ templates = Jinja2Templates(directory="templates")
 @app.get('/')
 def join_store(request: Request,
                name: str = "",
-               email_address: str | None = None,
+               email_address: str = "",
                store_id: str = None):
     if store_id is None:
         return templates.TemplateResponse(
@@ -52,6 +54,7 @@ def join_store(request: Request,
         name="join_store.html",
         context={
             "id": store_id,
+            "store_name": santastore["name"],
             "store_id": store_id,
             "name": name,
             "email_address": email_address
@@ -59,11 +62,21 @@ def join_store(request: Request,
     )
 
 @app.post("/")
-def store_data(request: Request):
+def store_data(request: Request,
+               name: Annotated[str, Form()],
+               email_address: Annotated[str, Form()],
+               store_id: Annotated[str, Form()]):
+
+
     return templates.TemplateResponse(
         request=request,
         status_code=202,
         name="register.html",
+        context={
+            "id": store_id,
+            "name": name,
+            "email_address": email_address
+        }
     )
 
 
