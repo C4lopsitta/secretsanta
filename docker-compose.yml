@@ -1,0 +1,6 @@
+services:
+  santastore:
+    build: .
+    ports:
+      - "9090:9090"
+    entrypoint: /bin/sh -c "uvicorn webpage:app --host 0.0.0.0 --port 9090"
