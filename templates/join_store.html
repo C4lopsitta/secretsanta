@@ -17,12 +17,12 @@
         <form action="/" method="post">
             <div class="row m-3">
                 <label class="col-sm-2 col-form-label" for="name">Nome</label>
-                <input class="form-control" type="text" id="name" name="name"></input>
+                <input class="form-control" type="text" id="name" name="name" value="{{ name }}"></input>
                 <p class="text-danger">{{ name_error }}</p>
             </div>
             <div class="row mt-0 m-3">
                 <label class="col-sm-2 col-form-label" for="email_address">Email</label>
-                <input class="form-control" type="email" id="email_address" name="email_address"></input>
+                <input class="form-control" type="email" id="email_address" name="email_address" value="{{ email_address }}"></input>
                 <p class="text-danger">{{ email_error }}</p>
             </div>
             <input type="hidden" name="store_id" value="{{ store_id }}"></input>
