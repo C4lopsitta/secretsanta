@@ -10,20 +10,20 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="navbar-brand">
-            <i class="bi bi-gift-fill m-3"></i>
-            <h2 class="navbar-brand">Secret Santa - {{ store_name }}</h2>
+            <h2 class="navbar-brand"><i class="bi bi-gift-fill m-3"></i> Secret Santa - {{ store_name }}</h2>
         </div>
     </nav>
     <div class="container">
         <form action="/" method="post">
-            <div class="row mt-0 m-3">
+            <div class="row m-3">
                 <label class="col-sm-2 col-form-label" for="name">Nome</label>
                 <input class="form-control" type="text" id="name" name="name"></input>
-                <p>Sono consentiti solamente caratteri dell'alfabeto latino maiuscoli e minuscoli.</p>
+                <p class="text-danger">{{ name_error }}</p>
             </div>
             <div class="row mt-0 m-3">
                 <label class="col-sm-2 col-form-label" for="email_address">Email</label>
                 <input class="form-control" type="email" id="email_address" name="email_address"></input>
+                <p class="text-danger">{{ email_error }}</p>
             </div>
             <input type="hidden" name="store_id" value="{{ store_id }}"></input>
 
@@ -39,7 +39,7 @@
             <span class="text-muted">
                 &copy; Robaldo Simone 2024<br />
                 Progetto sotto licenza <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU GPLv3 <i class="bi bi-box-arrow-up-right"></i></a><br />
-                <a href="https://github.com/c4lopsitta/secretsanta" >Visualizza il codice sorgente <i class="bi bi-box-arrow-up-right"></i></a>
+                <a href="https://github.com/c4lopsitta/secretsanta" ><i class="bi bi-github"></i> Visualizza il codice sorgente <i class="bi bi-box-arrow-up-right"></i></a>
             </span>
         </div>
     </footer>
