@@ -28,7 +28,7 @@
             <input type="hidden" name="store_id" value="{{ store_id }}"></input>
 
             <div class="row d-flex justify-content-end m-3 mt-0">
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" id="submit" class="btn btn-primary">
                     Registrati
                 </button>
             </div>
@@ -43,5 +43,14 @@
             </span>
         </div>
     </footer>
+    <script>
+        function handleButtonClick() {
+            const button = document.getElementById('submit');
+            // button.disabled = true;
+            button.textContent = 'Caricamento...';
+        }
+
+        document.getElementById('submit').onclick = handleButtonClick;
+    </script>
 </body>
 </html>

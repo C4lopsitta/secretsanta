@@ -1,4 +1,6 @@
 import re
+import uuid
+from os import getenv
 from typing import Annotated
 
 from fastapi import FastAPI, Form
@@ -7,8 +9,12 @@ from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+import email_sender
 import santastores
 from santastores import writer_queue
+
+base_url = getenv("BASE_URL")
+admin_email = getenv("ADMIN_EMAIL")
 
 app = FastAPI()
 app.mount("/templates", StaticFiles(directory="templates"), name="templates")
@@ -86,6 +92,50 @@ def accept_registration(request: Request,
             url=f"/?store_id={store_id}&email_error={email_error if email_error else ''}&name_error={name_error if name_error else ''}"
         )
 
+    try:
+        santastore = santastores.load_store(store_id)
+    except Exception as e:
+        return templates.TemplateResponse(
+            request=request,
+            name="error.html",
+            status_code=404,
+            context={
+                "id": store_id,
+                "erorr_text": f"Il gruppo con ID {store_id} non è stato trovato.",
+                "error_title": "Gruppo non trovato",
+                "error_code": "INVALID_STORE_ID"
+            }
+        )
+
+
+    try:
+        email_sender.send_confirmation_email(sender_name=name,
+                                             sender_email=email_address,
+                                             url=f"{base_url}/confirm_email?store_id={store_id}&email_address={email_address}&name={name}",
+                                             retry_url=f"{base_url}/?store_id={store_id}&email_address={email_address}&name={name}",
+                                             admin_email=admin_email,
+                                             store_name=santastore["name"])
+
+    except Exception as e:
+        trace_id = uuid.uuid4()
+        print(f"""
+[ERROR] Could not send confirmation email to {email_address}.
+[INFO] Trace id: {trace_id}
+[INFO] Error:
+{e.__str__()}
+""")
+        return templates.TemplateResponse(
+            request=request,
+            status_code=500,
+            name="error.html",
+            context={
+                "id": None,
+                "error_text": "Invio email",
+                "error_title": f"Errore durante l'invio della mail di conferma. Contatta l'amministratore e fornisci il seguente codice<br><p class=\"text-monospace\">{trace_id}</p>",
+                "error_code": "CONFIRM_EMAIL_SEND_ERROR"
+            }
+        )
+
     return templates.TemplateResponse(
         request=request,
         status_code=202,
@@ -102,8 +152,5 @@ def accept_registration(request: Request,
 def confirm_email(request: Request,
                   name: str,
                   email_address: str,
-                  store_id: str | None = None,):
+                  store_id: str | None = None, ):
     pass
-
-
-
