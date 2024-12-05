@@ -1,5 +1,6 @@
 import re
 import uuid
+from datetime import datetime
 from os import getenv
 from typing import Annotated
 
@@ -8,10 +9,12 @@ from fastapi.requests import Request
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.responses import JSONResponse
 
 import email_sender
 import santastores
-from santastores import writer_queue
+from SantaEntry import SantaEntry
+from santastores import writer_queue, add_santa_entry
 
 base_url = getenv("BASE_URL")
 admin_email = getenv("ADMIN_EMAIL")
@@ -111,8 +114,8 @@ def accept_registration(request: Request,
     try:
         email_sender.send_confirmation_email(sender_name=name,
                                              sender_email=email_address,
-                                             url=f"http://{base_url}/confirm_email?store_id={store_id}&email_address={email_address}&name={name}",
-                                             retry_url=f"http://{base_url}/?store_id={store_id}&email_address={email_address}&name={name}",
+                                             url=f"{base_url}/confirm_email?store_id={store_id}&email_address={email_address}&name={name}",
+                                             retry_url=f"{base_url}/?store_id={store_id}&email_address={email_address}&name={name}",
                                              admin_email=admin_email,
                                              store_name=santastore["name"])
 
@@ -153,4 +156,21 @@ def confirm_email(request: Request,
                   name: str,
                   email_address: str,
                   store_id: str | None = None, ):
-    pass
+    store = santastores.load_store(store_id)
+
+    entry = SantaEntry(name=name,
+                       email_address=email_address,
+                       store_id=store_id)
+
+    add_santa_entry(entry)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="confirmed.html",
+        context={
+            "id": store_id,
+            "name": name,
+            "store_name": store["name"],
+            "date": datetime.fromisoformat(store.get("end_date")).strftime("%d di Dicembre"),
+        }
+    )
