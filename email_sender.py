@@ -19,7 +19,7 @@ def get_gift_mail(sender_name: str,
     with open("templates/emails/gift.html", "r") as f:
         html = f.read()
     return (html.replace("{{ sender_name }}", sender_name)
-            .replace("{{ receiver_name }}", receiver_name)
+            .replace("{{ gift_receiver }}", receiver_name)
             .replace("{{ admin_email }}", admin_email))
 
 

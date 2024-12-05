@@ -1,4 +1,5 @@
 from crontab import CronTab
+from datetime import datetime
 
 
 def add_cron(job_name, curl_command, date_time):
@@ -8,17 +9,13 @@ def add_cron(job_name, curl_command, date_time):
     Args:
         job_name (str): A unique name for the cron job (used for identification).
         curl_command (str): The full curl command to execute.
-        date_time (str): The execution date-time in "YYYY-MM-DD HH:MM" format.
+        date_time (datetime): The execution date-time in "YYYY-MM-DD HH:MM" format.
     """
-    cron = CronTab(user=True)
-
-    # Parse date_time
-    from datetime import datetime
-    dt = datetime.strptime(date_time, "%Y-%m-%d %H:%M")
+    cron = CronTab(user=True, tabfile="/etc/crontabs/root")
 
     # Create a cron job
     job = cron.new(command=curl_command, comment=job_name)
-    job.setall(dt.minute, dt.hour, dt.day, dt.month, '*')
+    job.setall(date_time.minute, date_time.hour, date_time.day, date_time.month, '*')
 
     cron.write()
     print(f"Cron job '{job_name}' added to run at {date_time}")
@@ -31,7 +28,7 @@ def remove_cron(job_name):
     Args:
         job_name (str): The name of the cron job to remove.
     """
-    cron = CronTab(user=True)
+    cron = CronTab(user=True, tabfile="/etc/crontabs/root")
     jobs_removed = cron.remove_all(comment=job_name)
 
     if jobs_removed:

@@ -4,8 +4,25 @@
         {
             "name": "Simone",
             "email_address": "simonerobaldo98@gmail.com"
+        },
+        {
+            "name": "Antonio",
+            "email_address": "simone@atomtech.cc"
+        },
+        {
+            "name": "Giovanni",
+            "email_address": "robaldosimone98@gmail.com"
+        },
+        {
+            "name": "Piero",
+            "email_address": "srobaldo@elemento.cloud"
         }
     ],
-    "deny_pairs": [],
-    "end_date": "2024-12-13T05:00:00.00"
+    "deny_pairs": [
+        {
+            "email_a": "simone@atomtech.cc",
+            "email_b": "simonerobaldo98@gmail.com"
+        }
+    ],
+    "end_date": "2024-12-05T21:37:00.00"
 }

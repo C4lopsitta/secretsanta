@@ -3,6 +3,7 @@ import re
 import uuid
 from datetime import datetime
 from os import getenv
+from random import random, shuffle
 from typing import Annotated
 
 from fastapi import FastAPI, Form
@@ -10,7 +11,7 @@ from fastapi.requests import Request
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, PlainTextResponse
 
 import email_sender
 import santastores
@@ -56,6 +57,22 @@ def join_store(request: Request,
     # there's a store, load it
     try:
         santastore = santastores.load_store(store_id)
+
+        store_time = datetime.fromisoformat(santastore["end_date"])
+        if store_time < datetime.now():
+            return templates.TemplateResponse(
+                request=request,
+                name="error.html",
+                status_code=200,
+                context={
+                    "id": store_id,
+                    "store_name": santastore["name"],
+                    "error_title": "Troppo tardi",
+                    "error_text": f"La data di fine del Secret Santa è stata superata. Non puoi più iscriverti.",
+                    "error_code": "TOO_LATE"
+                }
+            )
+
     except Exception as e:
         print(e.__str__())
         return templates.TemplateResponse(
@@ -230,3 +247,64 @@ def confirm_email(request: Request,
             "date": datetime.fromisoformat(store.get("end_date")).strftime("%d di Dicembre"),
         }
     )
+
+
+@app.get("/send_emails")
+def send_emails(request: Request,
+                store_id: str):
+    store = santastores.load_store(store_id)
+    print(f"[INFO] Sending emails for {store_id}")
+
+    people: list[SantaEntry] = []
+    denied_pairs: list[tuple[str, str]] = []
+
+    for person in store["people"]:
+        people.append(SantaEntry(name=person["name"],
+                                 store_id=store_id,
+                                 email_address=person["email_address"]))
+
+    for deny_pair in store["deny_pairs"]:
+        denied_pairs.append((deny_pair["email_a"], deny_pair["email_b"]))
+
+    tries = 0
+    pairing_completed = False
+    pairs = []
+    while not pairing_completed:
+        tries += 1
+        if tries > 50:
+            return PlainTextResponse(content="No", status_code=500)
+        receivers = people.copy()
+        shuffle(receivers)
+        pairs = [(sender, receiver) for sender, receiver in zip(people, receivers)]
+
+        for pair in pairs:
+            print(pair[0].email_address, pair[1].email_address)
+
+        found_unallowed_pairs = False
+        for sender, receiver in pairs:
+            if found_unallowed_pairs:
+                break
+            for denied_sender, denied_receiver in denied_pairs:
+                if sender.email_address == denied_sender and receiver.email_address == denied_receiver or \
+                        sender.email_address == denied_receiver and receiver.email_address == denied_sender:
+                    print(f"Found unallowed pair: {sender.email_address} - {receiver.email_address}")
+                    found_unallowed_pairs = True
+        if not found_unallowed_pairs:
+            pairing_completed = True
+
+    for person in people:
+        print(person.email_address)
+
+    for denied_pair in denied_pairs:
+        print(denied_pair)
+
+    return PlainTextResponse(status_code=200, content=f"{[f'{a.email_address} {b.email_address}' for a, b in pairs]}")
+    #
+    # for sender, receiver in people:
+    #     email_sender.send_gift_mail(gift_sender_name=sender.name,
+    #                                 gift_reciver_name=receiver.name,
+    #                                 gift_sender_email=sender["email_address"],
+    #                                 admin_email=os.getenv("ADMIN_EMAIL"))
+    #
+    # return PlainTextResponse(status_code=200, content="OK")
+    #

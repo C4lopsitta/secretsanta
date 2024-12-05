@@ -6,6 +6,7 @@ COPY requirements.txt /app/requirements.txt
 WORKDIR /app
 
 RUN apk add busybox
+RUN apk add curl
 RUN apk add busybox-extras
 RUN pip install -r /app/requirements.txt
 
