@@ -7,4 +7,4 @@ services:
       - "9090:9090"
     volumes:
       - "/Users/c4lopsitta/PycharmProjects/secretsanta/santastores/:/app/santastores/"
-    entrypoint: /bin/sh -c "uvicorn webpage:app --host 0.0.0.0 --port 9090"
+    entrypoint: /bin/sh -c "uvicorn webpage:app --host 0.0.0.0 --port 9090 --workers 6"

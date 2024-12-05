@@ -31,7 +31,13 @@ def delete_store(store_id: str):
 
 
 def load_store(store_id: str) -> dict:
-    return json.load(open("santastores/"+store_id+".json"))
+    store = json.load(open("santastores/"+store_id+".json"))
+
+    if not store.keys().__contains__("cron_key"):
+        # TODO)) Add cron process
+        pass
+
+    return store
 
 
 def _writer(entry: SantaEntry):
@@ -42,7 +48,7 @@ def _writer(entry: SantaEntry):
         santa_list["people"].append(entry.to_dict())
 
         with open("santastores/"+entry.store_id+".json", "w") as f:
-            data = json.dumps(santa_list)
+            data = json.dumps(santa_list, indent=4)
             f.write(data)
 
 

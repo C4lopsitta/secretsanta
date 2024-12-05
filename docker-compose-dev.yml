@@ -1,0 +1,11 @@
+services:
+  santastore-dev:
+    build:
+      dockerfile: Dev_Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "9091:9091"
+    volumes:
+      - "/Users/c4lopsitta/PycharmProjects/secretsanta/:/app/"
+    entrypoint: /bin/sh -c "uvicorn webpage:app --host 0.0.0.0 --port 9091 --reload"

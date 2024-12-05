@@ -10,5 +10,5 @@ RUN apk add busybox
 RUN apk add busybox-extras
 RUN pip install -r /app/requirements.txt
 
-ENTRYPOINT ["uvicorn", "webpage:app", "--host", "0.0.0.0", "--port", "4040"]
+ENTRYPOINT ["uvicorn", "webpage:app", "--host", "0.0.0.0", "--port", "9090", "--workers", "6"]
 

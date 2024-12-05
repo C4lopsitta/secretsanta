@@ -1,3 +1,4 @@
+import os
 import re
 import uuid
 from datetime import datetime
@@ -44,6 +45,14 @@ def join_store(request: Request,
             }
         )
 
+    if os.getenv("debug") != "true" and store_id == "test":
+        return JSONResponse(
+            status_code=400,
+            content={
+                "error": "Debugging mode is disabled. Testing unavailable"
+            }
+        )
+
     # there's a store, load it
     try:
         santastore = santastores.load_store(store_id)
@@ -81,6 +90,14 @@ def accept_registration(request: Request,
                         name: Annotated[str, Form()],
                         email_address: Annotated[str, Form()],
                         store_id: Annotated[str, Form()]):
+    if os.getenv("debug") != "true" and store_id == "test":
+        return JSONResponse(
+            status_code=400,
+            content={
+                "error": "Debugging mode is disabled. Testing unavailable"
+            }
+        )
+
     name_error, email_error = None, None
 
     if re.fullmatch(r"^[a-zA-Zà-žÀ-Ž\s]+$", name) is None or len(name) > 30:
@@ -97,6 +114,19 @@ def accept_registration(request: Request,
 
     try:
         santastore = santastores.load_store(store_id)
+
+        for user in santastore["people"]:
+            if user["name"] == name and user["email_address"] == email_address or user["email_address"] == email_address:
+                return templates.TemplateResponse(
+                    request=request,
+                    name="error.html",
+                    context={
+                        "id": store_id,
+                        "error_title": "Iscrizione già effettuata",
+                        "error_text": f"L'iscrizione per l'email <p class=\"text-monospace\">{email_address}</p> è già stata effettuata. Se ci sono problemi, contatta l'amministratore",
+                        "error_code": "REGISTRATION_ALREADY_COMPLETED"
+                    }
+                )
     except Exception as e:
         return templates.TemplateResponse(
             request=request,
@@ -104,12 +134,11 @@ def accept_registration(request: Request,
             status_code=404,
             context={
                 "id": store_id,
-                "erorr_text": f"Il gruppo con ID {store_id} non è stato trovato.",
+                "error_text": f"Il gruppo con ID {store_id} non è stato trovato.",
                 "error_title": "Gruppo non trovato",
                 "error_code": "INVALID_STORE_ID"
             }
         )
-
 
     try:
         email_sender.send_confirmation_email(sender_name=name,
@@ -155,8 +184,35 @@ def accept_registration(request: Request,
 def confirm_email(request: Request,
                   name: str,
                   email_address: str,
-                  store_id: str | None = None, ):
+                  store_id: str | None = None):
     store = santastores.load_store(store_id)
+    print(f"[INFO] Recieved registration by user {email_address}, name is {name}")
+
+    if os.getenv("debug") != "true" and store_id == "test":
+        return templates.TemplateResponse(
+            request=request,
+            status_code=400,
+            name="error.html",
+            context={
+                "id": None,
+                "error_text": "Modalità di debug disabilitata",
+                "error_title": f"La modalità di debug è disabilitata. Non è possibile utilizzare la store test",
+                "error_code": "DEBUG_MODE_OFF"
+            }
+        )
+
+    for user in store["people"]:
+        if user["name"] == name and user["email_address"] == email_address:
+            return templates.TemplateResponse(
+                request=request,
+                name="confirmed.html",
+                context={
+                    "id": store_id,
+                    "name": name,
+                    "store_name": store["name"],
+                    "date": datetime.fromisoformat(store.get("end_date")).strftime("%d di Dicembre"),
+                }
+            )
 
     entry = SantaEntry(name=name,
                        email_address=email_address,

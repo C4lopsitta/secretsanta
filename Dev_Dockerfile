@@ -1,0 +1,15 @@
+FROM python:3.11.10-alpine
+LABEL authors="c4lopsitta"
+
+COPY requirements.txt /app/requirements.txt
+
+WORKDIR /app
+
+RUN apk add busybox
+RUN apk add busybox-extras
+RUN pip install -r /app/requirements.txt
+
+ENV debug="true"
+
+ENTRYPOINT ["uvicorn", "webpage:app", "--host", "0.0.0.0", "--port", "9091", "--reload", "--workers", "6"]
+
