@@ -286,19 +286,14 @@ def send_emails(request: Request,
                 break
             for denied_sender, denied_receiver in denied_pairs:
                 if sender.email_address == denied_sender and receiver.email_address == denied_receiver or \
-                        sender.email_address == denied_receiver and receiver.email_address == denied_sender:
-                    print(f"Found unallowed pair: {sender.email_address} - {receiver.email_address}")
+                        sender.email_address == denied_receiver and receiver.email_address == denied_sender or \
+                        sender.email_address == receiver.email_address:
                     found_unallowed_pairs = True
         if not found_unallowed_pairs:
             pairing_completed = True
 
-    for person in people:
-        print(person.email_address)
-
-    for denied_pair in denied_pairs:
-        print(denied_pair)
-
-    return PlainTextResponse(status_code=200, content=f"{[f'{a.email_address} {b.email_address}' for a, b in pairs]}")
+    newline = '\n'
+    return PlainTextResponse(status_code=200, content=f"{[f'{a.email_address} {b.email_address}' for a, b in pairs].__str__().replace('[', '').replace('], ', newline)}")
     #
     # for sender, receiver in people:
     #     email_sender.send_gift_mail(gift_sender_name=sender.name,
